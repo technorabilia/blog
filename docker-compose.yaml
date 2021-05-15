@@ -1,0 +1,58 @@
+version: "3"
+    
+services:
+  db:
+    image: mariadb
+    container_name: blog_db
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: blog_db
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_520_ci']
+    
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    container_name: blog_wordpress
+    volumes:
+      - ./html:/var/www/html
+    ports:
+      - "8099:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: blog_db
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    container_name: blog_phpmyadmin
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+  wordpress-cli:
+    depends_on:
+      - db
+      - wordpress
+    image: wordpress:cli
+    container_name: blog_wordpress-cli
+    user: "33:33"
+    volumes:
+      - ./html:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: blog_db
