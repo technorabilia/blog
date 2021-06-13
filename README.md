@@ -1,2 +1,1 @@
-# blog-bits
-Various Blog bits
+Blog configuration.
